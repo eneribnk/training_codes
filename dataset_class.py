@@ -2,7 +2,6 @@ import torch
 #import torchvision
 from torch.utils.data import Dataset, DataLoader
 import numpy as np
-import math
 print("successfully imported packages")
 
 
@@ -31,9 +30,5 @@ dataset = MergedDataset()
 # now we can see how a dataloader is used
 dataloader = DataLoader(dataset=dataset, batch_size=4, shuffle=True, num_workers=2)
 
-num_epochs = 2
-total_samples = len(dataset)
-n_iterations = math.ceil((total_samples)/4)
-print(total_samples, n_iterations)
 
 
