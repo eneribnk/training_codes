@@ -1,34 +1,43 @@
 import torch
-#import torchvision
 from torch.utils.data import Dataset, DataLoader
-import numpy as np
-print("successfully imported packages")
+import pandas as pd
+
+'''
+First of all, you need to load both X (features) and y's (predicted values).
+Numpy is ok for data manipulation, but for Dataset loading I find Pandas to be more helpful. 
+Nonetheless, you will need to provide tensors for the ML training.
+Also, you need to assure the DataLoader takes the input the way it can parse it, which is the for loop I use 
+at the end of the file.
+I will write below the code I suggest you use, but it is not mandatory, it is formed the way I am used to writing it and 
+(most importantly), how other people are used to seeing it!!
+Also, please notice the notation and the names I use.
+'''
 
 
 class MergedDataset(Dataset):
-    def __init__(self, power, pressure):
-        # data loading
-        rowdata = np.loadtxt('merged_1-2116.csv', delimiter=";", dtype=np.float64, skiprows=1)
-        self.power = torch.from_numpy(rowdata[:, [0]])  # if wrote like this [:,1:] all data except second column
-        self.pressure = torch.from_numpy(rowdata[:, [1]])
-        self.n_samples = rowdata.shape
+    def __init__(self):
+        # Constructor function
+        df = pd.read_csv('merged_1-2116.csv', sep=';')
+
+        X_columns = ['Power', 'Pressure']  # features
+        y_columns = [col for col in df.columns if col not in X_columns]  # To be predicted
+
+        self.X, self.y = df[X_columns], df[y_columns]
 
     def __getitem__(self, index):
-        # this will allow for indexing later
-        return self.power[index], self.pressure[index]  # these will give tuples
+        X = self.X.iloc[index, :].values
+        y = self.y.iloc[index, :].values
+        return torch.tensor(X, dtype=torch.float32), torch.tensor(y, dtype=torch.float32)
 
     def __len__(self):
-        # this allows to call len(dataset) for lenght
-        return self.n_samples
+        return self.X.shape[0]
 
 
 dataset = MergedDataset()
-#first_data = dataset_[1]
-#features, labels = first_data
-#print(features, labels)
 
-# now we can see how a dataloader is used
-dataloader = DataLoader(dataset=dataset, batch_size=4, shuffle=True, num_workers=2)
+dataloader = DataLoader(dataset=dataset, batch_size=4, shuffle=True)
 
-
-
+for batch_idx, (data, labels) in enumerate(dataloader):
+    print(f"Batch {batch_idx + 1}:")
+    print("Data:", data)
+    print("Labels:", labels)
